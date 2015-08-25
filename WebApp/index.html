@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html ng-app="app">
+<head>
+    <title>My Site</title>
+    <meta charset="utf-8" />
+
+    <link href="Content/bootstrap.css" rel="stylesheet" />
+    <link href="Content/toastr.css" rel="stylesheet" />
+
+    <script src="Scripts/jquery-1.9.1.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.0.js"></script>
+    <script src="Scripts/toastr.js"></script>
+
+    <script src="signalr/hubs"></script>
+    
+    <script src="Scripts/angular.js"></script>
+    <script src="App/angularUUID2.js"></script>
+
+    <script src="App/app.js"></script>
+    <script src="App/guidService.js"></script>
+    <script src="App/mainController.js"></script>
+    <script src="App/messageProxy.js"></script>
+
+</head>
+<body ng-controller="mainController as vm">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <p>{{ vm.title }}</p>
+            </div>
+            <div class="col-md-12">
+                <b>Current Item</b><br />
+                Id: <input type="text" ng-model="vm.currentItem.id" /><br />
+                Name: <input type="text" ng-model="vm.currentItem.name" /><br />
+                Active: <input type="checkbox" ng-model="vm.currentItem.isActive" /><br />
+                <input type="button" ng-click="vm.updateItem()" value="Update item" /><br />
+                <input type="button" ng-click="vm.addItem()" value="Add item" /><br />
+            </div>
+        </div>
+        <p>&nbsp;</p>
+        <div class="row">
+            <b>ItemList</b>
+            <table class="table table-condensed table-striped">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="item in vm.items" ng-click="vm.selectItem(item)">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>
+                            <input type="checkbox" ng-model="item.isActive" disabled />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>
