@@ -64,6 +64,11 @@ namespace WebApp.Controllers
             hub.Clients.All.globalMessageRecieved(@event);
         }
 
+        public void Handle(ItemDeletedEvent @event)
+        {
+            hub.Clients.All.globalMessageRecieved(@event);
+        }
+
 
     }
 

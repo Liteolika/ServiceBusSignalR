@@ -56,6 +56,7 @@ namespace WebApp
             Bus.SubscribeHandler<ClientNotification>(notifier.Handle);
             Bus.SubscribeHandler<ItemAddedEvent>(notifier.Handle);
             Bus.SubscribeHandler<ItemUpdatedEvent>(notifier.Handle);
+            Bus.SubscribeHandler<ItemDeletedEvent>(notifier.Handle);
 
 
         }

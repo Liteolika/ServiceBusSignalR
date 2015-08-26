@@ -84,6 +84,8 @@ namespace ConsoleApp
         {
             try
             {
+                Thread.Sleep(new Random().Next(500, 4000));
+
                 if (command.Id == Guid.Empty)
                     throw new ArgumentNullException("command.Id");
                 if (string.IsNullOrEmpty(command.Name))
@@ -99,13 +101,19 @@ namespace ConsoleApp
                     db.SaveChanges();
                 }
                 _publisher.Publish(new ItemAddedEvent() { Id = command.Id, Name = command.Name });
-                _publisher.Publish(new ClientNotification() { Success = true, Message = "The item was added", ClientId = command.ClientId });
+                _publisher.Publish(new ClientNotification() {
+                    Success = true,
+                    Message = string.Format("The item '{0}' was added", command.Name),
+                    ClientId = command.ClientId
+                });
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to execute command: {0}, Message: {1}", command.GetType().Name, ex.Message);
-                _publisher.Publish(new ClientNotification() { Success = false, Message = ex.Message, ClientId = command.ClientId });
+                _publisher.Publish(new ClientNotification() { Success = false,
+                    Message = string.Format("Could not add the item. Errormessage: ", ex.Message),
+                    ClientId = command.ClientId });
             }
 
         }
@@ -113,6 +121,10 @@ namespace ConsoleApp
         public void Handle(DeleteItemCommand command)
         {
             try {
+
+                
+
+                Thread.Sleep(new Random().Next(500, 4000));
 
                 if (command.Id == Guid.Empty)
                     throw new ArgumentNullException("command.Id");
@@ -129,14 +141,21 @@ namespace ConsoleApp
                     db.SaveChanges();
 
                     _publisher.Publish(new ItemDeletedEvent() { Id = command.Id });
-                    _publisher.Publish(new ClientNotification() { Success = true, Message = "The item was updated", ClientId = command.ClientId });
+                    _publisher.Publish(new ClientNotification() {
+                        Success = true,
+                        Message = string.Format("The item with id {0} was deleted", command.Id),
+                        ClientId = command.ClientId });
                 }
             }
 
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to execute command: {0}, Message: {1}", command.GetType().Name, ex.Message);
-                _publisher.Publish(new ClientNotification() { Success = false, Message = ex.Message, ClientId = command.ClientId });
+                _publisher.Publish(new ClientNotification() {
+                    Success = false,
+                    Message = string.Format("Could not delete the item. Errormessage: {0}", ex.Message),
+                    ClientId = command.ClientId
+                });
             }
         }
 
@@ -144,6 +163,8 @@ namespace ConsoleApp
         {
             try
             {
+                Thread.Sleep(new Random().Next(500, 4000));
+
                 if (command.Id == Guid.Empty)
                     throw new ArgumentNullException("command.Id");
                 if (string.IsNullOrEmpty(command.NewName))
@@ -162,13 +183,22 @@ namespace ConsoleApp
                 }
 
                 _publisher.Publish(new ItemUpdatedEvent() { Id = command.Id, Name = command.NewName });
-                _publisher.Publish(new ClientNotification() { Success = true, Message = "The item was updated", ClientId = command.ClientId });
+                _publisher.Publish(new ClientNotification()
+                {
+                    Success = true,
+                    Message = string.Format("The item '{0}' was updated.", command.NewName),
+                    ClientId = command.ClientId
+                });
             }
 
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to execute command: {0}, Message: {1}", command.GetType().Name, ex.Message);
-                _publisher.Publish(new ClientNotification() { Success = false, Message = ex.Message, ClientId = command.ClientId });
+                _publisher.Publish(new ClientNotification() {
+                    Success = false,
+                    Message = string.Format("Could not update the item. Errormessage: ", ex.Message),
+                    ClientId = command.ClientId
+                });
             }
         }
     }
