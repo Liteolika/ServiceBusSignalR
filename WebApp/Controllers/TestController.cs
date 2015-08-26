@@ -7,17 +7,65 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Filters;
+using System.Web.Http.Controllers;
 
 namespace WebApp.Controllers
 {
-    public class TestController : ApiController
+    public class ClientIDManagementAttribute : ActionFilterAttribute
+    {
+        public override void OnActionExecuting(HttpActionContext actionContext)
+        {
+            var clientid = GetClientId(actionContext);
+            actionContext.ActionArguments.Add("CLIENTID", clientid);
+            base.OnActionExecuting(actionContext);
+        }
+
+        private Guid GetClientId(HttpActionContext context)
+        {
+            Guid clientId = Guid.Empty;
+
+            IEnumerable<string> hvals;
+            if (context.Request.Headers.TryGetValues("X-ClientID", out hvals))
+            {
+                Guid.TryParse(hvals.First(), out clientId);
+            }
+
+            return clientId;
+        }
+
+    }
+
+    [ClientIDManagement]
+    public abstract class ApiControllerBase : ApiController
     {
 
-        //public static List<MyModel> Items = new List<MyModel>()
+        //protected Guid ClientId()
         //{
-        //    new MyModel() { Id = Guid.NewGuid(), Name = "Peter" },
-        //    new MyModel() { Id = Guid.NewGuid(), Name = "Anna" }
-        //};
+        //    object clientId;
+        //    ActionContext.ActionArguments.TryGetValue("CLIENTID", out clientId);
+        //    if (clientId != null)
+        //        return Guid.Parse(clientId.ToString());
+        //    return Guid.Empty;
+        //}
+
+        protected Guid CallerClientId
+        {
+            get
+            {
+                object clientId;
+                ActionContext.ActionArguments.TryGetValue("CLIENTID", out clientId);
+                if (clientId != null)
+                    return Guid.Parse(clientId.ToString());
+                return Guid.Empty;
+            }
+        }
+
+    }
+
+    
+    public class TestController : ApiControllerBase
+    {
 
         private readonly IServiceBus _bus;
         public TestController()
@@ -34,32 +82,27 @@ namespace WebApp.Controllers
             }
         }
 
+        
+        
         public IHttpActionResult Post(MyModel model)
         {
-            var clientId = GetClientId();
-            _bus.Publish(new AddItemCommand() { Id = Guid.NewGuid(), Name = model.Name, ClientId = clientId });
+            _bus.Publish(new AddItemCommand() { Id = Guid.NewGuid(), Name = model.Name, ClientId = CallerClientId });
             return Ok();
         }
 
         public IHttpActionResult Put(MyModel model)
         {
-            var clientId = GetClientId();
-            _bus.Publish(new UpdateItemCommand() { Id = model.Id, NewName = model.Name, ClientId = clientId, IsActive = model.IsActive });
+            _bus.Publish(new UpdateItemCommand() { Id = model.Id, NewName = model.Name, ClientId = CallerClientId, IsActive = model.IsActive });
             return Ok();
         }
 
-        private Guid GetClientId()
+        public IHttpActionResult Delete(Guid id)
         {
-            Guid clientId = Guid.Empty;
-
-            IEnumerable<string> hvals;
-            if (Request.Headers.TryGetValues("X-ClientID", out hvals))
-            {
-                Guid.TryParse(hvals.First(), out clientId);
-            }
-
-            return clientId;
+            _bus.Publish(new DeleteItemCommand() { Id = id, ClientId = CallerClientId });
+            return Ok();
         }
+
+        
 
     }
 

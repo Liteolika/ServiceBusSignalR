@@ -20,6 +20,15 @@
             //vm.currentItem = item;
         }
 
+        vm.deleteItem = function () {
+            $http({
+                method: 'DELETE',
+                url: '/api/test/' + vm.currentItem.id
+            }).then(function (response) {
+            }, function (error) {
+            });
+        }
+
         vm.addItem = function () {
             $http({
                 method: 'POST',

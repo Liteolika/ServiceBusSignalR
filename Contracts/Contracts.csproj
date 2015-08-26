@@ -42,7 +42,9 @@
   <ItemGroup>
     <Compile Include="AddItemCommand.cs" />
     <Compile Include="ClientNotification.cs" />
+    <Compile Include="DeleteItemCommand.cs" />
     <Compile Include="ItemAddedEvent.cs" />
+    <Compile Include="ItemDeletedEvent.cs" />
     <Compile Include="ItemUpdatedEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UpdateItemCommand.cs" />

@@ -35,6 +35,7 @@ namespace ConsoleApp
             TheCommandHandler handler = new TheCommandHandler(publisher);
             bus.SubscribeHandler<AddItemCommand>(handler.Handle);
             bus.SubscribeHandler<UpdateItemCommand>(handler.Handle);
+            bus.SubscribeHandler<DeleteItemCommand>(handler.Handle);
 
             Console.ReadKey();
 
@@ -63,6 +64,11 @@ namespace ConsoleApp
         public void Publish(ClientNotification clientNotification)
         {
             _bus.Publish(clientNotification);
+        }
+
+        internal void Publish(ItemDeletedEvent itemDeletedEvent)
+        {
+            _bus.Publish(itemDeletedEvent);
         }
     }
     public class TheCommandHandler
@@ -102,6 +108,36 @@ namespace ConsoleApp
                 _publisher.Publish(new ClientNotification() { Success = false, Message = ex.Message, ClientId = command.ClientId });
             }
 
+        }
+
+        public void Handle(DeleteItemCommand command)
+        {
+            try {
+
+                if (command.Id == Guid.Empty)
+                    throw new ArgumentNullException("command.Id");
+
+                Console.WriteLine("Got command: {0}, Id: {1}", command.GetType().Name, command.Id);
+
+                using (var db = new MyReadStore())
+                {
+                    var item = db.SomeItems.Where(x => x.Id == command.Id).FirstOrDefault();
+                    if (item == null)
+                        throw new Exception("Item with id " + command.Id.ToString() + " does not exist.");
+
+                    db.SomeItems.Remove(item);
+                    db.SaveChanges();
+
+                    _publisher.Publish(new ItemDeletedEvent() { Id = command.Id });
+                    _publisher.Publish(new ClientNotification() { Success = true, Message = "The item was updated", ClientId = command.ClientId });
+                }
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to execute command: {0}, Message: {1}", command.GetType().Name, ex.Message);
+                _publisher.Publish(new ClientNotification() { Success = false, Message = ex.Message, ClientId = command.ClientId });
+            }
         }
 
         public void Handle(UpdateItemCommand command)
